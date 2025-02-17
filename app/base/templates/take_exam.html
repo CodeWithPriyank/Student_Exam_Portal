@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Take Exam{% endblock %}
+{% block content %}
+
+<h2>Take Exam</h2>
+
+<!-- Timer Display -->
+<div id="timer" style="font-size: 20px; font-weight: bold; color: red;"></div>
+
+<form method="POST" id="exam-form">
+    {% csrf_token %}
+    {% for question in questions %}
+        <div class="mb-3">
+            <label class="form-label">{{ question.text }}</label>
+            {% for option in question.options.all %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option_{{ option.id }}" value="{{ option.id }}" required>
+                    <label class="form-check-label" for="option_{{ option.id }}">
+                        {{ option.text }}
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<!-- AJAX -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let examDuration = 60; 
+        let isSubmitted = false; 
+
+        // Restore remaining time from localStorage if available
+        let storedTime = localStorage.getItem("examTime");
+        if (storedTime) {
+            examDuration = parseInt(storedTime);
+        }
+ 
+        function updateTimerDisplay(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let remainingSeconds = seconds % 60;
+            $("#timer").text(`Time Left: ${minutes}m ${remainingSeconds}s`);
+        }
+
+        function autoSubmitExam() {
+            if (isSubmitted) return; // ye prevent karega if user submit exam manually
+            
+            $.ajax({
+                url: "{% url 'take_exam' %}",
+                type: "POST",
+                data: $("#exam-form").serialize(),
+                success: function (response) {
+                    alert("Time is up! Your exam has been submitted.");
+                    window.location.href = "{% url 'student_dashboard' %}";
+                },
+                error: function (xhr, status, error) {
+                    console.error("Submission Error:", error);
+                    alert("Failed to submit. Please try again.");
+                }
+            });
+        }
+
+        // Countdown Timer
+        let timerInterval = setInterval(function () {
+            if (examDuration <= 0) {
+                clearInterval(timerInterval);
+                localStorage.removeItem("examTime"); 
+                autoSubmitExam(); // Auto-submit only if time runs out
+            } else {
+                updateTimerDisplay(examDuration);
+                localStorage.setItem("examTime", examDuration);
+                examDuration--;
+            }
+        }, 1000);
+
+        // Manual Form Submission
+        $("#exam-form").submit(function (event) {
+            event.preventDefault();
+            isSubmitted = true; 
+            clearInterval(timerInterval); // Stop timer
+            localStorage.removeItem("examTime"); 
+
+            $.ajax({
+                url: "{% url 'take_exam' %}",
+                type: "POST",
+                data: $("#exam-form").serialize(),
+                success: function (response) {
+                    alert("Exam submitted successfully.");
+                    window.location.href = "{% url 'student_dashboard' %}";
+                },
+                error: function (xhr, status, error) {
+                    console.error("Submission Error:", error);
+                    alert("Failed to submit. Please try again.");
+                }
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}
+

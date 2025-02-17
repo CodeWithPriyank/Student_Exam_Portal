@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Take Exam{% endblock %}
+{% block content %}
+<style>{% include "style.css" %}</style>
+<style>
+  .profile{
+    height: 370px;
+    width: 325px;
+    background-color: white;
+    box-shadow: 10px 10px;
+    border-style: solid;
+    border-width: 5px;
+    display: flex;
+
+}
+.info{
+  height: 300px;
+  width: 400px;
+  background-color: white;
+  box-shadow: 10px 10px;
+  border-style: solid;
+  border-width: 5px;
+  flex: 2;
+}
+.whole-container     {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;      
+}
+.img{
+  padding-left: 20px;
+  padding-top: 15px;
+}
+</style>
+<h2> Student Profile</h2>
+<br>
+<form method = 'POST' id = "result-form">
+{% csrf_token %}
+
+    <div class = "whole-container">
+
+
+      <!---- student profile ---->
+        <div class = "profile">
+            <div class="img text-center">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar"
+                    class="rounded-circle img-fluid" style="width: 150px;">
+                <h5 class="user">{{request.user}}</h5>
+
+                <div class="details">
+                  {% comment %} <a href="{% url 'take_exam' %}" class="form-btn">Take Exam</a>&nbsp  {% endcomment %}
+                  {% comment %} <a href = "{% url 'reset_password' %}" class = 'form-btn'>Reset Password</a> {% endcomment %}
+                  {% comment %} <a href = "{% url 'resultPage' %}" class = 'btn btn-primary'>Result</a> {% endcomment %}
+                  <button onclick = "window.location.href = '/student/take_exam'" type = "button">Take Exam</button>&nbsp &nbsp
+                  <button onclick = "window.location.href = '/reset_password'" type = "button">Reset Password</button>
+                  <br>
+                  <br>
+                  <div class = "result-button">
+                    <button type = "button">Result</button>
+                  </div>
+                  {% comment %} <button id = "result-button" type = "button"> Result</button> {% endcomment %}
+                </div>
+
+              </div>
+        </div>
+        <br>
+        <!-- Student information -->
+         <div class = "info" style = "height: 350px;">
+            <div class = "name">
+                <h5 class="mb-0">Full Name</h5>
+            </div>
+            <div class = "name-v">
+                <p class="text-muted mb-0">{{request.user}}</p>
+            </div>
+            <hr>
+            <div class = "email">
+                <h5 class="mb-0">Email</h5>
+            </div>
+            <div class = "email-v">
+                <p class="text-muted mb-0">{{request.user.email}}</p>
+            </div>
+            <hr>
+            <div class = "roll">
+                <h5 class="mb-0">Roll Number</h5>
+            </div>
+            <div class = "roll-v">
+                <p class="text-muted mb-0">{{request.user.roll_number}}</p>
+            </div>
+            <hr>
+            <div class = "per">
+                <h5 class="mb-0">Percentage</h5>
+            </div>
+            <div class = "per-v">
+                <p class="text-muted mb-0">{{percentage}}</p>
+            </div>
+
+         </div>
+    </div>
+</form>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $(document).on("click", "#result-form .result-button button", function (event) {
+            event.preventDefault(); 
+
+            console.log("result function javascript call");
+            var form = $("#result-form");
+            var formData = new FormData($("#result-form")[0]);
+            var csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+            formData.append("csrfmiddlewaretoken", csrfToken);
+            $.ajax({
+                url: "{% url 'resultPage' %}",  
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { "X-CSRFToken": csrfToken },
+                success: function (response) {
+                    console.log(response.success, "response", response.errors);
+                    if (response.success) {
+                        console.log("Redirecting to:", response.redirect_url);
+                        window.location.href = response.redirect_url;
+                    } else {
+                        console.log("in error", response.errors);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    alert("Failed to fetch results. Please try again.");
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

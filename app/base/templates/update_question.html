@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Update Question{% endblock %}
+{% block content %}
+<h2>Update Question</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<form method = "POST">
+{% csrf_token %}
+<a href="{% url 'manage_teacher' %}" class="btn btn-outline-primary">Manage Teachers</a>
+<a href="{% url 'manage_student' %}" class="btn btn-outline-success">Manage Students</a>
+<h3 class="mt-4">Teacher List</h3>
+    <ul>
+        {% for teacher in teachers %}
+        <li>{{ teacher.username }} - {{ teacher.subject }}
+            <a href="{% url 'update_teacher' teacher.id %}" class="btn btn-warning btn-sm">Update</a> 
+            <a href="{% url 'delete_teacher' teacher.id%}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?');">Delete</a>           
+        </li><br>
+        {% endfor %}
+    </ul>
+<h3>Students</h3>
+<ul>
+    {% for student in students %}
+        <li>{{ student.username }} - {{student.roll_number}}
+            <a href="{% url 'delete_student' student.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?');">Delete</a>           
+        </li><br>
+    {% endfor %}
+</ul>
+</form>
+{% endblock %}

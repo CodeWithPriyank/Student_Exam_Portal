@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<style>{% include "style.css" %}</style>
+<div class="container mt-5" style = "width: 500px">
+    
+    <form id="login-form" method="POST">
+        {% csrf_token %}
+        
+        <h2 class="text-center">Login</h2>
+        
+        <div class="mb-3">
+            <label for="username" class="box">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="box">Password</label>
+            <input type="password" class="form-control" id="password" name="user_password" required>
+        </div>
+        <div class="mb-3">
+            <label for="role" class="form-label">Login As</label>
+            <select class="form-select" id="role" name="role">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <div class = "form-btn">
+            <button type="button">Login</button>
+            <button onclick = "window.location.href = '/register'">Register</button>
+        </div>
+        
+    </form>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+    $(document).on("click", "#login-form .form-btn button", function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        var form = $("#login-form");
+        var formData = new FormData($("#login-form")[0]); // Serialize form data
+        var csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+        // Ensure CSRF token is included
+        formData.append("csrfmiddlewaretoken", csrfToken);
+
+        $.ajax({
+            url: "{% url 'login_user' %}",  // Django view handling login
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-CSRFToken": csrfToken }, // Include CSRF token
+            success: function (response) {
+                console.log(response);  // Debug response
+
+                if (response.success) {
+                    console.log("Login successful, redirecting...");
+                    if (response.role === "student") {
+                        window.location.href = "{% url 'student_dashboard' %}";
+                    } else if (response.role === "teacher") {
+                        window.location.href = "{% url 'teacher_dashboard' %}";
+                    } else if (response.role === "admin") {
+                        window.location.href = "{% url 'admin_dashboard' %}";
+                    } else {
+                        console.log("Invalid role received.");
+                    }
+                } else {
+                    if (response.errors) {  // Ensure errors exist before accessing properties
+                        if (response.errors.username) {
+                            console.log(response.errors.username);
+                            $("input[name='username']").after('<div class="error"><p>' + response.errors.username + '</p></div>');
+                        }
+                        if (response.errors.user_password) {
+                            console.log(response.errors.user_password);
+                            $("input[name='user_password']").after('<div class="error"><p>' + response.errors.user_password + '</p></div>');
+                        }
+                    } else {
+                        console.log("Unexpected error format:", response);
+                    }
+                }
+            },
+            error: function (xhr, status, error) {  
+                console.log("AJAX Error:", error);
+                $("#login-form").append('<div class="error text-danger"><p>Invalid username or password.</p></div>');
+            }
+        });
+    });
+});
+
+</script>
+
+{% endblock %}
