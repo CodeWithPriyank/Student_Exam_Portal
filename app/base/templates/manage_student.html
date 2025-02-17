@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Manage Students{% endblock %}
+{% block content %}
+<h2>Manage Students</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="roll_number" class="form-label">Roll Number</label>
+        <input type="text" class="form-control" id="roll_number" name="roll_number" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Student</button>
+    {% if request.user.role == 'teacher'%}
+    <a href="{% url 'teacher_dashboard' %}" class = "btn btn-primary">Back to Dashboard</a>
+    {% else %}
+    <a href="{% url 'admin_dashboard' %}" class = "btn btn-primary">Back to Dashboard</a>
+    {% endif %}
+</form>
+
+<h3>Students List</h3>
+<ul>
+    {% for student in students %}
+        <li>{{ student.username }} 
+            <a href="{% url 'delete_student' student.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?');">Delete</a>
+        </li><br>
+    {% empty %}
+        <li>No students found.</li>  
+    {% endfor %}
+</ul>
+
+{% endblock %}

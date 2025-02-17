@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Take Exam{% endblock %}
+{% block content %}
+
+<form method = "POST">
+{% csrf_token %}
+ 
+    {% if exams %}
+        <h1>Results for {{ student.username }}</h1>
+        <h2>Total Marks: {{marks}}/{{total_marks }}</h2>
+        <h2>Status: {{status}}</h2>
+        <h2>Percentage: {{percentage}}</h2>
+        <table class = "table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Sr No.</th>
+                    <th>Question</th>
+                    <th>Selected Option</th>
+                    <th>Correct?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                    <tr>
+                        <th>{{ forloop.counter }}</th>
+                        <td>{{ exam.question.text }}</td>
+                        <td>{{ exam.selected_option.text }}</td>
+                        <td>{{ exam.is_correct|yesno:"Yes,No" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No exams found for this student.</p>
+    {% endif %}
+
+
+    <a href="{% url 'student_dashboard' %}" class = "btn btn-primary">Back to Dashboard</a> 
+
+    </form>
+{% endblock %}
